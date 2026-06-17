@@ -399,7 +399,7 @@ const STAGES = [
       const correct = Math.floor(Math.random() * 4);
       const choices = [];
       const equations = ['x + 3 = 7', '2x = 10', 'x - 1 = 5', '3x = 9', 'x + 1 = 4', '5x = 15', 'x - 6 = 2'];
-      const nonEq = ['2 + 3 = 5', '4 × 2 = 8', 'x + 3', '2x - 1', '5 + 7', '3 × 4', 'x + 2 > 3', '7 - 2 = 5'];
+      const nonEq = ['2 + 3 = 5', '4 × 2 = 8', 'x + 3', '2x - 1', '5 + 7', '3 × 4', '10 - 4 = 6', '7 - 2 = 5'];
       const eq = equations[Math.floor(Math.random() * equations.length)];
       for (let i = 0; i < 4; i++) {
         if (i === correct) choices.push({ text: eq, isCorrect: true });
@@ -423,26 +423,30 @@ const STAGES = [
     generate() {
       const type = Math.random() < 0.5 ? 'add' : 'sub';
       let a, x, b, question, step1Label, step1Answer, step2Answer;
+      // x≠0 조건 (0이면 문제가 너무 단순)
+      do { x = randInt(-10, 10); } while (x === 0);
       if (type === 'add') {
-        // x + a = b, step1Answer=a (1~9), step2Answer=x (-10~10)
-        // b = x + a는 화면에 표시만 되고 버튼 선택 대상 아님 → 제한 없음
+        // x + a = b
+        // step1Answer = a (1~9), step2Answer = x (-10~10, ≠0)
         a = randInt(1, 9);
-        x = randInt(-10, 10);
         b = x + a;
         question = `x + ${a} = ${b}`;
         step1Label = `양변에서 빼야 할 수는?`;
-        step1Answer = a; // 1~9: 항상 버튼 범위 안
-        step2Answer = x; // -10~10 보장
+        step1Answer = a;
+        step2Answer = x;
       } else {
-        // x - a = b, step1Answer=a (1~9), step2Answer=x (-10~10)
+        // x - a = b
+        // step1Answer = a (1~9), step2Answer = x (-10~10, ≠0)
         a = randInt(1, 9);
-        x = randInt(-10, 10);
         b = x - a;
         question = `x - ${a} = ${b}`;
         step1Label = `양변에 더해야 할 수는?`;
-        step1Answer = a; // 1~9: 항상 버튼 범위 안
-        step2Answer = x; // -10~10 보장
+        step1Answer = a;
+        step2Answer = x;
       }
+      // 최종 검증: 두 답 모두 -10~10인지 확인
+      if (step1Answer < -10 || step1Answer > 10) return this.generate();
+      if (step2Answer < -10 || step2Answer > 10) return this.generate();
       return { question, step1Label, step1Answer, step2Answer };
     }
   },
@@ -464,28 +468,31 @@ const STAGES = [
       const type = Math.random() < 0.5 ? 'mul' : 'div';
       let question, step1Label, step1Answer, step2Answer;
       if (type === 'mul') {
-        // ax = b → step1Answer=a(2~5), step2Answer=x(-10~10)
-        // a*x의 절댓값이 버튼 범위 밖이어도 괜찮 (b는 표시만)
+        // ax = b → step1Answer=a(2~5), step2Answer=x(-10~10, ≠0)
         const a = randInt(2, 5);
-        const x = randInt(-10, 10);
+        let x;
+        do { x = randInt(-10, 10); } while (x === 0);
         const b = a * x;
         question = `${a}x = ${b}`;
         step1Label = `양변을 나눌 수는?`;
-        step1Answer = a; // 2~5: 항상 버튼 범위 안
-        step2Answer = x; // -10~10 보장
+        step1Answer = a;
+        step2Answer = x;
       } else {
-        // x ÷ a = b → step1Answer=a(2~5), step2Answer=x(-10~10)
-        // x = a*b이므로 a*b가 -10~10이어야 함
+        // x ÷ a = b → step1Answer=a(2~5), step2Answer=x(-10~10, ≠0)
         const a = randInt(2, 5);
         const maxB = Math.floor(10 / a);
-        if (maxB === 0) return this.generate();
-        const b = randInt(-maxB, maxB);
-        const x = a * b; // -10~10 보장
+        if (maxB < 1) return this.generate();
+        let b;
+        do { b = randInt(-maxB, maxB); } while (b === 0);
+        const x = a * b;
         question = `x ÷ ${a} = ${b}`;
         step1Label = `양변에 곱할 수는?`;
-        step1Answer = a; // 2~5: 항상 버튼 범위 안
-        step2Answer = x; // -10~10 보장
+        step1Answer = a;
+        step2Answer = x;
       }
+      // 최종 검증
+      if (step1Answer < -10 || step1Answer > 10) return this.generate();
+      if (step2Answer < -10 || step2Answer > 10) return this.generate();
       return { question, step1Label, step1Answer, step2Answer };
     }
   },
@@ -503,20 +510,22 @@ const STAGES = [
     ],
     generate() {
       // ax + b = c
-      // x: -10~10, step1Answer(=a*x)도 -10~10 이어야 함
-      // a*x가 -10~10이 되려면: a=2이면 x=-5~5, a=3이면 x=-3~3, a=4이면 x=-2~2
+      // step1Answer = ax (-10~10), step2Answer = x (-10~10, ≠0)
       const a = randInt(2, 4);
       const maxX = Math.floor(10 / a);
-      const x = randInt(-maxX, maxX);
-      const ax = a * x; // step1Answer: -10~10 보장
-      // b는 -10~10이고 b≠0
+      let x;
+      do { x = randInt(-maxX, maxX); } while (x === 0);
+      const ax = a * x; // step1Answer
       let b;
-      do { b = randInt(-10, 10); } while (b === 0);
+      do { b = randInt(-9, 9); } while (b === 0);
       const c = ax + b;
       const bStr = b >= 0 ? `+ ${b}` : `- ${Math.abs(b)}`;
       const question = `${a}x ${bStr} = ${c}`;
-      const step1Answer = ax; // 이항 후 우변 = c - b = ax
+      const step1Answer = ax;
       const step1Label = `이항 후 우변의 값은? (${a}x = ?)`;
+      // 최종 검증
+      if (step1Answer < -10 || step1Answer > 10) return this.generate();
+      if (x < -10 || x > 10) return this.generate();
       return { question, step1Label, step1Answer, step2Answer: x };
     }
   },
@@ -533,25 +542,25 @@ const STAGES = [
       { text: '&nbsp;&nbsp;&nbsp;➜ 양변 ÷ 2: <span class="highlight-yellow">x = 3</span>', delay: 2100 },
     ],
     generate() {
-      // (a-c)x = d-b  → step1Answer = (a-c)*x, step2Answer = x
-      // 둘 다 -10~10 보장
-      const coeff = randIntNonZero(1, 4); // a-c
+      // (a-c)x = rhs → step1Answer=rhs(-10~10), step2Answer=x(-10~10, ≠0)
+      const coeff = randInt(1, 4); // a-c, 항상 양수
       const maxX = Math.floor(10 / coeff);
-      if (maxX === 0) return this.generate();
-      const x = randInt(-maxX, maxX);
+      if (maxX < 1) return this.generate();
+      let x;
+      do { x = randInt(-maxX, maxX); } while (x === 0);
       const rhs = coeff * x; // step1Answer: -10~10 보장
-      // c: 1~3, a = c + coeff
       const c = randInt(1, 3);
       const a = c + coeff;
-      // b: -10~10, b≠0
       let b;
       do { b = randInt(-8, 8); } while (b === 0);
-      // d = rhs + b = (a-c)*x + b
       const d = rhs + b;
       const bStr = b >= 0 ? `+ ${b}` : `- ${Math.abs(b)}`;
       const dStr = d >= 0 ? `+ ${d}` : `- ${Math.abs(d)}`;
       const question = `${a}x ${bStr} = ${c}x ${dStr}`;
       const step1Label = `이항 후: ${coeff}x = ? 우변은?`;
+      // 최종 검증
+      if (rhs < -10 || rhs > 10) return this.generate();
+      if (x < -10 || x > 10) return this.generate();
       return { question, step1Label, step1Answer: rhs, step2Answer: x };
     }
   }
