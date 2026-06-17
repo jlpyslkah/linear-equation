@@ -567,6 +567,176 @@ const STAGES = [
       if (x < -10 || x > 10) return this.generate();
       return { question, step1Label, step1Answer: rhs, step2Answer: x };
     }
+  },
+
+  // Stage 6: ax + b = cx + d 암산 (해 바로 구하기, -10~10)
+  {
+    id: 6,
+    title: 'ax + b = cx + d 암산',
+    type: 'onestep',
+    btnRange: 10,
+    concept: [
+      { text: '이제 <span class="highlight">암산</span>으로 해를 바로 구해봐요!', delay: 0 },
+      { text: '예) <span class="highlight-blue">5x + 7 = 2x + 4</span>', delay: 700 },
+      { text: '&nbsp;&nbsp;&nbsp;➜ 3x = -3 &nbsp;➜&nbsp; <span class="highlight-yellow">x = -1</span>', delay: 1400 },
+      { text: '과정은 머릿속으로! <span class="highlight-green">해만 바로 선택</span>하세요.', delay: 2100 },
+    ],
+    generate() {
+      const coeff = randInt(1, 4);
+      const maxX = Math.floor(10 / coeff);
+      if (maxX < 1) return this.generate();
+      let x;
+      do { x = randInt(-maxX, maxX); } while (x === 0);
+      const c = randInt(1, 3);
+      const a = c + coeff;
+      let b;
+      do { b = randInt(-8, 8); } while (b === 0);
+      const d = coeff * x + b;
+      const bStr = b >= 0 ? `+ ${b}` : `- ${Math.abs(b)}`;
+      const dStr = d >= 0 ? `+ ${d}` : `- ${Math.abs(d)}`;
+      const question = `${a}x ${bStr} = ${c}x ${dStr}`;
+      if (x < -10 || x > 10) return this.generate();
+      return { question, answer: x };
+    }
+  },
+
+  // Stage 7: x/a = b (a가 분수 계수, x/3 표기, 해 바로 구하기, -20~20)
+  {
+    id: 7,
+    title: 'x/a = b (분수 계수)',
+    type: 'onestep',
+    btnRange: 20,
+    concept: [
+      { text: '예) <span class="highlight-blue">x/3 = 4</span>', delay: 0 },
+      { text: '&nbsp;&nbsp;&nbsp;➜ 양변에 3을 곱하면: <span class="highlight-yellow">x = 12</span>', delay: 700 },
+      { text: '예) <span class="highlight-blue">2x/3 = 4</span>', delay: 1400 },
+      { text: '&nbsp;&nbsp;&nbsp;➜ 양변에 3/2을 곱하면: <span class="highlight-yellow">x = 6</span>', delay: 2100 },
+      { text: '<span class="highlight-green">해를 바로 선택</span>하세요!', delay: 2800 },
+    ],
+    generate() {
+      // x/a = b 또는 px/q = b 형태
+      // x를 먼저 정하고 역산
+      // 분수 계수 후보: 1/2, 1/3, 1/4, 2/3, 3/4, -1/2, -1/3, -2/3, -3/4
+      const fracs = [
+        {p:1,q:2},{p:1,q:3},{p:1,q:4},{p:2,q:3},{p:3,q:4},
+        {p:-1,q:2},{p:-1,q:3},{p:-2,q:3},{p:-3,q:4}
+      ];
+      const frac = fracs[Math.floor(Math.random() * fracs.length)];
+      const {p, q} = frac;
+      // x는 q의 배수여야 b가 정수
+      const maxX = Math.floor(20 / Math.abs(q));
+      const multiples = [];
+      for (let m = -maxX; m <= maxX; m++) {
+        const xv = m * q;
+        if (xv !== 0 && Math.abs(xv) <= 20 && Number.isInteger(p * xv / q)) multiples.push(xv);
+      }
+      if (multiples.length === 0) return this.generate();
+      const x = multiples[Math.floor(Math.random() * multiples.length)];
+      const b = p * x / q; // 정수 보장
+      if (!Number.isInteger(b)) return this.generate();
+      // 문제 표기: x/q = b (p=1), px/q = b (p>1)
+      let question;
+      const absP = Math.abs(p);
+      const sign = p < 0 ? '-' : '';
+      if (absP === 1) question = `${sign}x/${q} = ${b}`;
+      else question = `${sign}${absP}x/${q} = ${b}`;
+      if (x < -20 || x > 20) return this.generate();
+      return { question, answer: x };
+    }
+  },
+
+  // Stage 8: px/q + b = c (분수 계수, 해 바로 구하기, -20~20)
+  {
+    id: 8,
+    title: 'x/a + b = c (분수 계수)',
+    type: 'onestep',
+    btnRange: 20,
+    concept: [
+      { text: '예) <span class="highlight-blue">x/3 + 2 = 6</span>', delay: 0 },
+      { text: '&nbsp;&nbsp;&nbsp;➜ x/3 = 4 &nbsp;➜&nbsp; <span class="highlight-yellow">x = 12</span>', delay: 700 },
+      { text: '예) <span class="highlight-blue">2x/3 - 1 = 3</span>', delay: 1400 },
+      { text: '&nbsp;&nbsp;&nbsp;➜ 2x/3 = 4 &nbsp;➜&nbsp; <span class="highlight-yellow">x = 6</span>', delay: 2100 },
+      { text: '<span class="highlight-green">해를 바로 선택</span>하세요!', delay: 2800 },
+    ],
+    generate() {
+      const fracs = [
+        {p:1,q:2},{p:1,q:3},{p:1,q:4},{p:2,q:3},{p:3,q:4},
+        {p:-1,q:2},{p:-1,q:3},{p:-2,q:3},{p:-3,q:4}
+      ];
+      const frac = fracs[Math.floor(Math.random() * fracs.length)];
+      const {p, q} = frac;
+      const maxX = Math.floor(20 / Math.abs(q));
+      const multiples = [];
+      for (let m = -maxX; m <= maxX; m++) {
+        const xv = m * q;
+        if (xv !== 0 && Math.abs(xv) <= 20 && Number.isInteger(p * xv / q)) multiples.push(xv);
+      }
+      if (multiples.length === 0) return this.generate();
+      const x = multiples[Math.floor(Math.random() * multiples.length)];
+      const ax = p * x / q;
+      if (!Number.isInteger(ax)) return this.generate();
+      let b;
+      do { b = randInt(-8, 8); } while (b === 0);
+      const c = ax + b;
+      const absP = Math.abs(p);
+      const sign = p < 0 ? '-' : '';
+      let lhs;
+      if (absP === 1) lhs = `${sign}x/${q}`;
+      else lhs = `${sign}${absP}x/${q}`;
+      const bStr = b >= 0 ? `+ ${b}` : `- ${Math.abs(b)}`;
+      const question = `${lhs} ${bStr} = ${c}`;
+      if (x < -20 || x > 20) return this.generate();
+      return { question, answer: x };
+    }
+  },
+
+  // Stage 9: px/q + b = rx/s + d (분수 계수, 해 바로 구하기, -20~20)
+  {
+    id: 9,
+    title: 'x/a + b = x/c + d (분수 계수)',
+    type: 'onestep',
+    btnRange: 20,
+    concept: [
+      { text: '예) <span class="highlight-blue">x/2 + 1 = x/3 + 4</span>', delay: 0 },
+      { text: '&nbsp;&nbsp;&nbsp;➜ x/2 - x/3 = 3 &nbsp;➜&nbsp; x/6 = 3', delay: 700 },
+      { text: '&nbsp;&nbsp;&nbsp;➜ <span class="highlight-yellow">x = 18</span>', delay: 1400 },
+      { text: '<span class="highlight-green">해를 바로 선택</span>하세요!', delay: 2100 },
+    ],
+    generate() {
+      // x/q1 + b = x/q2 + d 형태 (분자=1)
+      // (1/q1 - 1/q2)x = d - b
+      const qPairs = [[2,3],[2,4],[3,4],[3,6],[4,6],[2,6]];
+      const [q1, q2] = qPairs[Math.floor(Math.random() * qPairs.length)];
+      // coeff = 1/q1 - 1/q2 = (q2-q1)/(q1*q2)
+      const coeffNum = q2 - q1; // 분자
+      const coeffDen = q1 * q2; // 분모
+      // x = (d-b) * coeffDen / coeffNum 이 정수이고 -20~20이어야 함
+      // x = k * coeffDen / coeffNum → coeffNum | k*coeffDen
+      // 간단하게: x = n * (coeffDen / gcd(coeffNum, coeffDen))
+      const g = gcd(Math.abs(coeffNum), coeffDen);
+      const step = coeffDen / g; // x의 최소 단위
+      const maxN = Math.floor(20 / step);
+      if (maxN < 1) return this.generate();
+      let x;
+      const candidates = [];
+      for (let n = -maxN; n <= maxN; n++) {
+        if (n !== 0) candidates.push(n * step);
+      }
+      if (candidates.length === 0) return this.generate();
+      x = candidates[Math.floor(Math.random() * candidates.length)];
+      if (Math.abs(x) > 20) return this.generate();
+      // b, d 계산: x/q1 + b = x/q2 + d
+      // d - b = (1/q1 - 1/q2)*x = coeffNum*x/coeffDen
+      const diff = coeffNum * x / coeffDen; // d-b, 정수 보장
+      if (!Number.isInteger(diff)) return this.generate();
+      let b;
+      do { b = randInt(-6, 6); } while (b === 0);
+      const d = diff + b;
+      const bStr = b >= 0 ? `+ ${b}` : `- ${Math.abs(b)}`;
+      const dStr = d >= 0 ? `+ ${d}` : `- ${Math.abs(d)}`;
+      const question = `x/${q1} ${bStr} = x/${q2} ${dStr}`;
+      return { question, answer: x };
+    }
   }
 ];
 
@@ -581,6 +751,9 @@ function randIntNonZero(min, max) {
   do { v = randInt(min, max); } while (v === 0);
   return v;
 }
+function gcd(a, b) {
+  return b === 0 ? a : gcd(b, a % b);
+}
 
 // ══════════════════════════════════════════
 // 게임 상태
@@ -594,14 +767,15 @@ let twoStepPhase = 1; // 1 or 2
 // 초기화
 // ══════════════════════════════════════════
 function init() {
-  buildIntButtons();
   loadStage();
 }
 
-function buildIntButtons() {
+function buildIntButtons(range) {
   const container = document.getElementById('int-buttons');
   container.innerHTML = '';
-  for (let i = -10; i <= 10; i++) {
+  // 범위에 따라 열 수 조정
+  container.style.gridTemplateColumns = range <= 10 ? 'repeat(7, 1fr)' : 'repeat(9, 1fr)';
+  for (let i = -range; i <= range; i++) {
     const btn = document.createElement('button');
     btn.className = 'int-btn';
     btn.textContent = i;
@@ -619,6 +793,9 @@ function loadStage() {
   document.getElementById('stage-indicator').textContent = `Stage ${stage.id} / ${STAGES.length}`;
   streak = 0;
   updateStreakBar();
+  // 버튼 범위: onestep/twostep은 stage.btnRange, 없으면 10
+  const range = stage.btnRange || 10;
+  buildIntButtons(range);
   showConcept(stage);
   nextProblem();
 }
@@ -650,6 +827,8 @@ function nextProblem() {
 
   if (stage.type === 'choice') {
     showChoiceProblem();
+  } else if (stage.type === 'onestep') {
+    showOneStepProblem();
   } else {
     showTwoStepProblem();
   }
@@ -673,6 +852,18 @@ function showChoiceProblem() {
     btn.onclick = () => onChoiceClick(c.isCorrect, btn, container);
     container.appendChild(btn);
   });
+}
+
+function showOneStepProblem() {
+  document.getElementById('s1-choices').style.display = 'none';
+  document.getElementById('int-buttons').style.display = 'grid';
+  document.getElementById('two-step-display').style.display = 'none';
+
+  document.getElementById('problem-text').textContent = currentProblem.question;
+  document.getElementById('problem-sub').textContent = '';
+  document.getElementById('step-hint').textContent = 'x = ?';
+
+  resetIntButtons();
 }
 
 function showTwoStepProblem() {
@@ -724,6 +915,18 @@ function onChoiceClick(isCorrect, btn, container) {
 
 function onIntClick(val, btn) {
   const stage = STAGES[stageIdx];
+
+  if (stage.type === 'onestep') {
+    if (val === currentProblem.answer) {
+      btn.classList.add('correct');
+      onCorrect();
+    } else {
+      btn.classList.add('wrong');
+      showFeedbackWrong();
+      setTimeout(() => onWrong(), 1000);
+    }
+    return;
+  }
 
   if (stage.type !== 'twostep') return;
 
