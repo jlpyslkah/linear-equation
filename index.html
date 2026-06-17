@@ -395,15 +395,19 @@ const STAGES = [
       { text: '<span class="highlight-green">x가 없는 등식</span>이나 <span class="highlight-green">등호가 없는 식</span>은 방정식이 아니에요.', delay: 2400 },
     ],
     generate() {
-      // 4개 보기 중 1개만 방정식
+      // 4개 보기 중 1개만 방정식, 나머지 3개는 중복 없이 선택
       const correct = Math.floor(Math.random() * 4);
-      const choices = [];
       const equations = ['x + 3 = 7', '2x = 10', 'x - 1 = 5', '3x = 9', 'x + 1 = 4', '5x = 15', 'x - 6 = 2'];
       const nonEq = ['2 + 3 = 5', '4 × 2 = 8', 'x + 3', '2x - 1', '5 + 7', '3 × 4', 'x + 2 > 3', '7 - 2 = 5', '10 - 4 = 6', 'x - 1 > 0'];
       const eq = equations[Math.floor(Math.random() * equations.length)];
+      // 중복 없이 3개 뽑기
+      const shuffled = nonEq.slice().sort(() => Math.random() - 0.5);
+      const picked = shuffled.slice(0, 3);
+      const choices = [];
+      let nonEqIdx = 0;
       for (let i = 0; i < 4; i++) {
         if (i === correct) choices.push({ text: eq, isCorrect: true });
-        else choices.push({ text: nonEq[Math.floor(Math.random() * nonEq.length)], isCorrect: false });
+        else choices.push({ text: picked[nonEqIdx++], isCorrect: false });
       }
       return { question: '다음 중 방정식을 고르세요.', choices, answer: correct };
     }
