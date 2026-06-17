@@ -25,10 +25,10 @@
     font-family: 'Noto Sans KR', sans-serif;
     background: var(--bg-dark);
     color: var(--chalk-white);
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-y: auto;
   }
 
   /* ── 헤더 ── */
@@ -68,13 +68,13 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
     position: relative;
   }
 
   /* ── 상단 2/5: 개념 칠판 ── */
   #concept-board {
     flex: 2;
+    min-height: 220px;
     background: var(--board-green);
     border-bottom: 3px solid #4ade80;
     padding: 16px 24px;
@@ -82,7 +82,6 @@
     flex-direction: column;
     justify-content: center;
     position: relative;
-    overflow: hidden;
   }
   #concept-board::before {
     content: '';
@@ -125,7 +124,6 @@
     flex-direction: column;
     padding: 12px 20px;
     gap: 10px;
-    overflow: hidden;
   }
 
   /* Stage 1: 번호 선택 */
