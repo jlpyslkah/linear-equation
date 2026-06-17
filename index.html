@@ -399,7 +399,7 @@ const STAGES = [
       const correct = Math.floor(Math.random() * 4);
       const choices = [];
       const equations = ['x + 3 = 7', '2x = 10', 'x - 1 = 5', '3x = 9', 'x + 1 = 4', '5x = 15', 'x - 6 = 2'];
-      const nonEq = ['2 + 3 = 5', '4 × 2 = 8', 'x + 3', '2x - 1', '5 + 7', '3 × 4', '10 - 4 = 6', '7 - 2 = 5'];
+      const nonEq = ['2 + 3 = 5', '4 × 2 = 8', 'x + 3', '2x - 1', '5 + 7', '3 × 4', 'x + 2 > 3', '7 - 2 = 5', '10 - 4 = 6', 'x - 1 > 0'];
       const eq = equations[Math.floor(Math.random() * equations.length)];
       for (let i = 0; i < 4; i++) {
         if (i === correct) choices.push({ text: eq, isCorrect: true });
